@@ -34,7 +34,7 @@
 WORKING_DIRECTORY="$(pwd)"
 BASH_FILENAME="$(basename $0)"
 
-DEFAULT_BOOST_VERSION=1.65.1
+DEFAULT_BOOST_VERSION=1.66.0
 
 ##
 # Convert a passed in string to lowercase

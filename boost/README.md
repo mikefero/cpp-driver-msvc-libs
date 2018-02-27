@@ -29,6 +29,6 @@ Usage: generate.sh [OPTION...]
 
     --debug                         include debug libraries
     --version <version>             version number to retrieve and archive
-                                    (default: 1.64.0)
+                                    (default: 1.66.0)
     --help                          display this message
 ```
