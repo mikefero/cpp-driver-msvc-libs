@@ -32,9 +32,9 @@
 #set -n #Check Syntax
 
 WORKING_DIRECTORY="$(pwd)"
-BASH_FILENAME="$(basename $0)"
+BASH_FILENAME="$(basename ${0})"
 
-DEFAULT_BOOST_VERSION=1.66.0
+DEFAULT_BOOST_VERSION=1.67.0
 
 ##
 # Convert a passed in string to lowercase
@@ -43,7 +43,7 @@ DEFAULT_BOOST_VERSION=1.66.0
 # @return String converted to lowercase
 ##
 toLower() {
-	local string="$1"
+	local string="${1}"
 	echo "$string" | tr "[:upper:]" "[:lower:]"
 }
 
@@ -98,13 +98,20 @@ downloadAndExtractBoostArchive() {
 #
 # Create the archives for the DataStax C/C++ driver
 #
-# @param ${1} True is debug libraries should be bundled; false otherwise
+# @param ${1} True if Boost version >= 1.66.0; false otherwise
+# @param ${2} True if debug libraries should be bundled; false otherwise
 #
 createArchives() {
-  local debug_libraries=${1}
+  local boost_ge_1_66_0=${1}
+  local debug_libraries=${2}
   local prefix="libboost_"
   local release_suffix="-*-mt-1_*.lib"
   local debug_suffix="-*-mt-gd-1_*.lib"
+  if [ "${boost_ge_1_66_0}" == "true" ]
+  then
+    local release_suffix="-*-mt-x*-1_*.lib"
+    local debug_suffix="-*-mt-gd-x*-1_*.lib"
+  fi
   local binaries=("atomic" "chrono" "date_time" "filesystem" "log_setup" "log" "regex" "system" "thread" "unit_test_framework")
 
   # Clean old archive builds
@@ -256,6 +263,15 @@ fi
 # Determine if we should execute the script
 if [ ! -d "${BOOST_VERSION}" ]
 then
+  # Determine if we are working with a Boost version >= 1.66.0
+  BOOST_GE_1_66_0=false
+  BOOST_COMPARE_VERSION=`echo "${BOOST_VERSION}" | awk 'BEGIN { FS = "."; } { printf "%d", ($1 * 100 + $2) * 100 + $3;}'`
+  BOOST_1_66_COMPARE_VERSION=16600
+  if [ ${BOOST_COMPARE_VERSION} -ge ${BOOST_1_66_COMPARE_VERSION} ]
+  then
+    BOOST_GE_1_66_0=true
+  fi
+
   # Download and extract the requested boost archive
   downloadAndExtractBoostArchive ${BOOST_VERSION}
 
@@ -263,7 +279,7 @@ then
   pushd /tmp/boost_* > /dev/null
 
   # Create the archives
-  createArchives ${DEBUG}
+  createArchives ${BOOST_GE_1_66_0} ${DEBUG}
 
   # Move the archives to the working directory
   mkdir -p "${WORKING_DIRECTORY}/${BOOST_VERSION}"
